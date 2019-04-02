@@ -1,7 +1,8 @@
 {
-  "miniprogramRoot": "./dist",
+  "miniprogramRoot": "client/dist/",
+  "cloudfunctionRoot": "cloud/functions/",
   "projectname": "remember_me",
-  "description": "一个纪念日、备忘录、记事本的小工具。",
+  "description": "",
   "appid": "touristappid",
   "setting": {
     "urlCheck": true,

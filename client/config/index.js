@@ -1,6 +1,6 @@
 const config = {
   projectName: 'remember_me',
-  date: '2019-3-19',
+  date: '2019-4-2',
   designWidth: 750,
   deviceRatio: {
     '640': 2.34 / 2,
