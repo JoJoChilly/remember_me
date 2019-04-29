@@ -1,6 +1,7 @@
 import Taro, { Component, Config } from '@tarojs/taro';
-import { View, Button, Picker, Text } from '@tarojs/components';
-import { AtForm, AtButton, AtInput, AtRadio, AtIcon } from 'taro-ui';
+import { View, Button, Form, Input, Picker, Text } from '@tarojs/components';
+import { AtIcon } from 'taro-ui';
+import moment from 'moment';
 import './index.scss';
 
 const memoTypeMap = {
@@ -16,10 +17,12 @@ const options = Object.keys(memoTypeMap).map(el => ({
 export default class Memorial extends Component {
   state = {
     showAddMemo: false,
+    isManaging: false,
     memos: [],
+    loading: true,
     memo: {
       description: '',
-      date: '',
+      date: moment().format('YYYY-MM-DD'),
       type: 'birthday',
     },
   };
@@ -34,11 +37,15 @@ export default class Memorial extends Component {
     navigationBarTitleText: '纪念日',
   };
 
-  componentWillMount() {}
+  componentWillMount() {
+    Taro.showLoading();
+  }
 
   async componentDidMount() {
-    Taro.showLoading();
     await this.getDemos();
+    this.setState({
+      loading: false,
+    });
     Taro.hideLoading();
   }
 
@@ -54,17 +61,53 @@ export default class Memorial extends Component {
       data: { method: 'list' },
     });
 
+    const memos = result.data
+      .map(memo => {
+        const memoDay = moment(memo.date);
+        const memoMonth = memoDay.month();
+        const memoDate = memoDay.date();
+
+        const today = moment().startOf('date');
+        const todayYear = today.year();
+        const todayMonth = today.month();
+        const todayDate = today.date();
+
+        let delta = 0;
+        if (memo.type === 'birthday') {
+          if (memoMonth > todayMonth || (memoMonth === todayMonth && memoDate > todayDate)) {
+            delta = moment(`${todayYear}-${memoMonth + 1}-${memoDate}`, 'YYYY-M-D').diff(
+              today,
+              'days',
+            );
+          } else {
+            delta = moment(`${todayYear + 1}-${memoMonth + 1}-${memoDate}`, 'YYYY-M-D').diff(
+              today,
+              'days',
+            );
+          }
+        } else {
+          delta = today.diff(memoDay, 'days');
+        }
+
+        return {
+          ...memo,
+          delta,
+        };
+      })
+      .sort((a, b) => a.delta - b.delta);
+
     this.setState({
-      memos: result.data,
+      memos,
     });
   }
 
   addMemo() {
     this.setState({
       showAddMemo: true,
+      isManaging: false,
       memo: {
         description: '',
-        date: '',
+        date: moment().format('YYYY-MM-DD'),
         type: 'birthday',
       },
     });
@@ -74,6 +117,15 @@ export default class Memorial extends Component {
     Taro.showLoading();
     const { memo } = this.state;
     try {
+      if (!memo.description) {
+        Taro.showToast({
+          title: '请输入描述哦',
+          icon: 'none',
+          duration: 1000,
+        });
+        return;
+      }
+
       if (memo._id) {
         const id = await Taro.cloud.callFunction({
           name: 'memorial',
@@ -96,6 +148,7 @@ export default class Memorial extends Component {
       });
       this.setState({
         showAddMemo: false,
+        isManaging: false,
       });
     } catch (e) {
       console.log(e);
@@ -110,6 +163,11 @@ export default class Memorial extends Component {
   onReset() {
     this.setState({
       showAddMemo: false,
+      memo: {
+        description: '',
+        date: moment().format('YYYY-MM-DD'),
+        type: 'birthday',
+      },
     });
   }
 
@@ -117,7 +175,7 @@ export default class Memorial extends Component {
     const { memo } = this.state;
     this.setState({
       memo: Object.assign(memo, {
-        description: e,
+        description: e.detail.value.trim(),
       }),
     });
   }
@@ -171,69 +229,127 @@ export default class Memorial extends Component {
   editMemo(index) {
     const { memos } = this.state;
     this.setState({
-      memo: this.state.memos[index],
+      memo: memos[index],
       showAddMemo: true,
+      isManaging: false,
+    });
+  }
+
+  toogleShowManage() {
+    const { isManaging } = this.state;
+    this.setState({
+      isManaging: !isManaging,
+      showAddMemo: false,
     });
   }
 
   render() {
-    const { showAddMemo, memo, memos } = this.state;
+    const { showAddMemo, memo, memos, isManaging, loading } = this.state;
     return (
-      <View className="index">
-        <div className="title">纪念日</div>
-        {memos.length > 0 ? (
-          <div className="memorial-list">
-            {memos.map((el, index) => (
-              <Button className="memo" key={el._id} onClick={() => this.editMemo(index)}>
-                <div className="desc">
-                  <span className="type">{el.type}</span>
-                  {el.description}: <span className="date">{el.date}</span>
-                </div>
-                <div className="delete">
-                  <AtIcon
-                    value="trash"
-                    onClick={() => this.deleteMemo(el._id)}
-                    size="20"
-                    color="#F00"
-                  />
-                </div>
+      <View className="memorial-index page-container">
+        <View className="nav">
+          <Button onClick={this.addMemo}>
+            <AtIcon value="add" size="20" color="#424143" />
+            添加
+          </Button>
+          {memos.length > 0 ? (
+            <Button className="manage" onClick={this.toogleShowManage}>
+              <AtIcon value="settings" size="20" color="#424143" />
+              {isManaging ? '取消' : '管理'}
+            </Button>
+          ) : (
+            ''
+          )}
+        </View>
+
+        {showAddMemo ? (
+          <Form
+            className="form"
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
+          >
+            <View className="page-section">
+              <View className="title">描述</View>
+              <Input
+                name="description"
+                type="text"
+                value={memo.description}
+                onInput={this.handleDescriptionChange}
+                placeholder="请输入描述"
+              />
+            </View>
+            <View className="page-section">
+              <Picker mode="date" onChange={this.onTimeChange} value={memo.date}>
+                <View className="picker">
+                  日期<span>{memo.date}</span>
+                </View>
+              </Picker>
+            </View>
+            <View className="page-section">
+              <Picker
+                mode="selector"
+                range={options}
+                rangeKey="label"
+                onChange={this.handleTypeChange.bind(this)}
+                value={memo.type}
+              >
+                <View className="picker">
+                  类别<span>{memoTypeMap[memo.type]}</span>
+                </View>
+              </Picker>
+            </View>
+            <View className="operation">
+              <Button className="submit" formType="submit">
+                提交
               </Button>
-            ))}
-          </div>
+              <Button className="reset" formType="reset">
+                取消
+              </Button>
+            </View>
+          </Form>
         ) : (
-          <Text>您现在还没有记录哦，快去创建吧！</Text>
+          ''
         )}
 
-        <Button onClick={this.addMemo}>添加</Button>
-        {showAddMemo ? (
-          <AtForm onSubmit={this.onSubmit.bind(this)} onReset={this.onReset.bind(this)}>
-            <AtInput
-              name="description"
-              title="描述"
-              type="text"
-              value={memo.description}
-              onChange={this.handleDescriptionChange}
-            />
-            <View className="page-section">
-              <View>
-                <Picker mode="date" onChange={this.onTimeChange} value={memo.date}>
-                  {memo.date ? (
-                    <View className="picker">当前选择：{memo.date}</View>
+        {memos.length > 0 ? (
+          <View className="memorial-list">
+            {memos.map((el, index) => (
+              <View className="memo" key={el._id}>
+                <View className="content">
+                  <View className="type">{el.type}</View>
+                  <View className="desc">{el.description}</View>
+                  <View className="date">{el.date}</View>
+                  {el.type === 'birthday' ? (
+                    <View className="delta birthday">
+                      还有<span>{el.delta}</span>天
+                    </View>
                   ) : (
-                    <View>请选择日期：</View>
+                    <View className="delta event">
+                      已经过去<span>{el.delta}</span>天
+                    </View>
                   )}
-                </Picker>
-              </View>
-            </View>
-            <AtRadio
-              options={options}
-              value={memo.type}
-              onClick={this.handleTypeChange.bind(this)}
-            />
+                </View>
 
-            <AtButton formType="submit">提交</AtButton>
-            <AtButton formType="reset">取消</AtButton>
-          </AtForm>
+                {isManaging ? (
+                  <View className="manage-ctn">
+                    <Button className="delete" onClick={() => this.deleteMemo(el._id)}>
+                      <AtIcon value="trash" size="16" color="#F00" />
+                    </Button>
+                    <Button className="edit" onClick={() => this.editMemo(index)}>
+                      <AtIcon value="edit" size="16" color="#F00" />
+                    </Button>
+                  </View>
+                ) : (
+                  ''
+                )}
+              </View>
+            ))}
+          </View>
+        ) : (
+          ''
+        )}
+        {memos.length === 0 && loading === false ? (
+          <Text className="no-memo">您现在还没有记录哦，快去创建吧！</Text>
         ) : (
           ''
         )}

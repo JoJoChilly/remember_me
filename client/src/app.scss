@@ -16,7 +16,8 @@ p {
 
 button {
   border-radius: 0;
-
+  padding: 0;
+  background-color: inherit;
   &:after {
     border: none;
   }
