@@ -57,6 +57,7 @@ export default class Index extends Component {
     });
     this.setState({
       user: result,
+      isNewUser: false,
     });
     Taro.hideLoading();
   };
