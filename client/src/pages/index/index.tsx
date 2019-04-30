@@ -71,6 +71,14 @@ export default class Index extends Component {
     });
   }
 
+  onShareAppMessage() {
+    return {
+      title: '这里有一个非常好用的纪念日备忘录日记本，你要不要试试？',
+      imageUrl: bg,
+      path: 'pages/index/index',
+    };
+  }
+
   render() {
     const { user, isNewUser } = this.state;
     return (

@@ -235,12 +235,20 @@ export default class Memorial extends Component {
     });
   }
 
-  toogleShowManage() {
+  toggleShowManage() {
     const { isManaging } = this.state;
     this.setState({
       isManaging: !isManaging,
       showAddMemo: false,
     });
+  }
+
+  onShareAppMessage() {
+    return {
+      title: '这里有一个非常好用的纪念日备忘录日记本，你要不要试试？',
+      imageUrl: bg,
+      path: 'pages/index/index',
+    };
   }
 
   render() {
@@ -253,7 +261,7 @@ export default class Memorial extends Component {
             添加
           </Button>
           {memos.length > 0 ? (
-            <Button className="manage" onClick={this.toogleShowManage}>
+            <Button className="manage" onClick={this.toggleShowManage}>
               <AtIcon value="settings" size="20" color="#424143" />
               {isManaging ? '取消' : '管理'}
             </Button>
