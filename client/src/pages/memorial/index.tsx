@@ -2,6 +2,7 @@ import Taro, { Component, Config } from '@tarojs/taro';
 import { View, Button, Form, Input, Picker, Text } from '@tarojs/components';
 import { AtIcon } from 'taro-ui';
 import moment from 'moment';
+import bg from './images/bg.jpeg';
 import './index.scss';
 
 const memoTypeMap = {
