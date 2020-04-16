@@ -21,7 +21,7 @@ exports.main = async (event, context) => {
             if (users.data.length > 0) {
                 return users.data[0];
             } else {
-                return {};
+                return null;
             }
         case 'register':
             const user = {

@@ -1,62 +1,53 @@
-import Taro, { Component, Config } from '@tarojs/taro';
-import { View, Text, Button, Image } from '@tarojs/components';
-import './index.scss';
-
-import bg from './images/bg.jpeg';
+import Taro, { Component } from "@tarojs/taro";
+import { View, Text, Button, Image } from "@tarojs/components";
+import "./index.less";
+import bg from "./images/bg.jpeg";
 
 export default class Index extends Component {
-  /**
-   * 指定config的类型声明为: Taro.Config
-   *
-   * 由于 typescript 对于 object 类型推导只能推出 Key 的基本类型
-   * 对于像 navigationBarTextStyle: 'black' 这样的推导出的类型是 string
-   * 提示和声明 navigationBarTextStyle: 'black' | 'white' 类型冲突, 需要显示声明类型
-   */
-  config: Config = {
-    navigationBarTitleText: 'Remember Me',
-  };
-
   state = {
-    context: {},
     user: {},
-    isNewUser: false,
+    isNewUser: false
   };
-
+  componentWillMount() {}
   async componentDidMount() {
     Taro.showLoading();
     await this.checkIsNewUser();
     Taro.hideLoading();
   }
 
+  componentWillUnmount() {}
+  config = {
+    navigationBarTitleText: "Remember Me"
+  };
   async checkIsNewUser() {
     const { result } = await Taro.cloud.callFunction({
-      name: 'user',
+      name: "user",
       data: {
-        method: 'login',
-      },
+        method: "login"
+      }
     });
     if (result) {
       this.setState({
-        user: result,
+        user: result
       });
     } else {
       this.setState({
-        isNewUser: true,
+        isNewUser: true
       });
     }
   }
-
   saveUser = async e => {
     const { userInfo } = e.detail;
     const { result } = await Taro.cloud.callFunction({
-      name: 'user',
+      name: "user",
       data: {
-        method: 'register',
-        body: userInfo,
-      },
+        method: "register",
+        body: userInfo
+      }
     });
     this.setState({
       user: result,
+      isNewUser: false
     });
     Taro.hideLoading();
   };
@@ -67,17 +58,25 @@ export default class Index extends Component {
 
   jumpTo(target) {
     Taro.redirectTo({
-      url: `/pages/${target}/index`,
+      url: `/pages/${target}/index`
     });
   }
 
   onShareAppMessage() {
     return {
-      title: '这里有一个非常好用的纪念日备忘录日记本，你要不要试试？',
+      title: "这里有一个非常好用的纪念日备忘录日记本，你要不要试试？",
       imageUrl: bg,
-      path: 'pages/index/index',
+      path: "pages/index/index"
     };
   }
+
+  componentDidShow() {}
+
+  componentDidHide() {}
+
+  config = {
+    navigationBarTitleText: "首页"
+  };
 
   render() {
     const { user, isNewUser } = this.state;
@@ -95,19 +94,17 @@ export default class Index extends Component {
             授权登录
           </Button>
         ) : (
-          ''
+          ""
         )}
-        {JSON.stringify(user) !== '{}' && !isNewUser ? (
+        {JSON.stringify(user) !== "{}" && !isNewUser ? (
           <View className="welcome">
             <Text className="txt">欢迎，{user.nickName}</Text>
-            <Button onClick={() => this.jumpTo('memorial')}>纪念日</Button>
+            <Button onClick={() => this.jumpTo("memorial")}>纪念日</Button>
             <Button>猫咪大赛(敬请期待)</Button>
-            <Button>备忘录(敬请期待)</Button>
             <Button>账本(敬请期待)</Button>
-            <Button>日记(敬请期待)</Button>
           </View>
         ) : (
-          ''
+          ""
         )}
       </View>
     );
