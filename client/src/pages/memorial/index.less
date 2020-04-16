@@ -1,6 +1,6 @@
-$color-brand: #424143;
-$color-brand-light: #717172;
-$color-brand-dark: #353436;
+@color-brand: #424143;
+@color-brand-light: #717172;
+@color-brand-dark: #353436;
 
 view {
   line-height: 2;
@@ -8,14 +8,18 @@ view {
 
 .nav {
   text-align: right;
-  color: $color-brand;
+  color: @color-brand;
   button {
     position: relative;
-    width: 120px;
     display: inline-block;
     font-size: 32px;
-    color: $color-brand;
+    color: @color-brand;
     margin-right: 18px;
+    background-color: #fff;
+    padding: 0;
+    &::after {
+      content: none;
+    }
     .at-icon {
       margin-right: 6px;
       vertical-align: middle;
@@ -131,20 +135,13 @@ view {
       button {
         position: relative;
         display: inline-block;
-        //   font-size: 32px;
-        //   width: 150px;
         height: 70px;
         margin: 0 20px;
-        //   border-radius: 10px;
-        //   &.submit {
-        //     border: 1px solid #66968c;
-        //     background-color: #66968c;
-        //     color: #fff;
-        //   }
-        //   &.reset {
-        //     border: 1px solid #66968c;
-        //     color: #66968c;
-        //   }
+        padding: 0;
+        line-height: unset;
+        &::after {
+          content: none;
+        }
       }
     }
   }
