@@ -1,5 +1,5 @@
 import Taro, { Component } from "@tarojs/taro";
-import { View, Text, Button, Image } from "@tarojs/components";
+import { View, Text, Button, Image, Navigator } from "@tarojs/components";
 import "./index.less";
 import bg from "./images/bg.jpeg";
 
@@ -102,6 +102,16 @@ export default class Index extends Component {
             <Button onClick={() => this.jumpTo("memorial")}>纪念日</Button>
             <Button>猫咪大赛(敬请期待)</Button>
             <Button>账本(敬请期待)</Button>
+            <Navigator
+              target="miniProgram"
+              open-type="navigate"
+              app-id="wx8abaf00ee8c3202e"
+              extra-data={{ id: "144608" }}
+              version="release"
+              className="tucao"
+            >
+              提个建议
+            </Navigator>
           </View>
         ) : (
           ""

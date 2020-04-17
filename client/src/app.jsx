@@ -33,7 +33,8 @@ class App extends Component {
       navigationBarTitleText: "WeChat",
       navigationBarTextStyle: "black"
     },
-    cloud: true
+    cloud: true,
+    navigateToMiniProgramAppIdList: ["wx8abaf00ee8c3202e"]
   };
 
   // 在 App 类中的 render() 函数没有实际作用
